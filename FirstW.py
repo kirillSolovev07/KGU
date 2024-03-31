@@ -140,6 +140,7 @@ class SecondW(QWidget):
         self.title.move(0, 0)
 
     def ret_text_formul(self, text):
+        self.hide()
         win.formula.setText(text)
 
 
@@ -147,4 +148,3 @@ class SecondW(QWidget):
 app = QApplication([])
 win = FirstW()
 app.exec_()
-print(globals()["win"])
