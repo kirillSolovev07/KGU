@@ -1,4 +1,3 @@
-from SecondW import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -19,6 +18,13 @@ class FirstW(QWidget):
         self.formula.setAlignment(Qt.AlignCenter)
         self.formula.setStyleSheet("font-size: 30px;")
         self.formula.setFixedSize(305, 155)
+
+        self.frame1 = QFrame(self)
+        self.frame1.setFixedSize(305, 125)
+        self.frame1.move(0, 60)
+
+        self.labels = []
+        self.inserts = []
 
         self.nums_create()
 
@@ -65,6 +71,12 @@ class FirstW(QWidget):
         index, text = self.combobox.currentIndex(), self.combobox.currentText()
         self.secondW = SecondW(index, text)
         self.secondW.show()
+
+        # if self.formula.text() != "Выберите формулу":
+        #     self.formula.setText("Выберите формулу")
+        #     self.formula.setAlignment(Qt.AlignCenter)
+        #     self.formula.setStyleSheet("font-size: 30px;")
+        #     self.formula.setFixedSize(305, 155)
 
 
 class SecondW(QWidget):
@@ -139,9 +151,66 @@ class SecondW(QWidget):
         self.title.setFixedWidth(250)
         self.title.move(0, 0)
 
+    def create_label_equally(self, y):
+        equ = QLabel("=", win.frame1)
+        equ.setFixedWidth(20)
+        equ.setStyleSheet("font-size: 20px;")
+        equ.move(90, y)
+        return equ
+
+    def create_inserts_and_labels(self, s):
+        y = 20
+        for i in range(len(s)):
+            if s[i] not in "/*-+":
+                if (s[i] != s[-1]) and (s[i] not in u"\u2082\u2081\u00B2\u2080") and (
+                        s[i + 1] in u"\u2082\u2081\u00B2\u2080"):
+                    t = s[i] + s[i + 1]
+                elif s[i] in u"\u2082\u2081\u00B2\u2080()\u221A":
+                    continue
+                else:
+                    t = s[i]
+
+                label = QLabel(t, win.frame1)
+                label.setStyleSheet("font-size: 20px;")  # background-color: gray;
+                label.setFixedWidth(25)
+                label.move(65, y)
+                label.show()
+                equally = self.create_label_equally(y)
+                equally.show()
+                win.labels += [label]
+                win.labels += [equally]
+
+                insert = QLineEdit(win.frame1)
+                insert.setStyleSheet("font-size: 20px;")
+                insert.move(110, y)
+                insert.setFixedWidth(150)
+                insert.show()
+                win.inserts += [insert]
+            y += 20
+
     def ret_text_formul(self, text):
         self.hide()
+
+        s = text.replace(" ", "")
+        s = s[s.find("=") + 1:]
+
+        if win.formula.text() != "Выберите формулу":
+            for i in win.labels:
+                i.hide()
+
+            for i in win.inserts:
+                i.hide()
+            self.create_inserts_and_labels(s)
+        else:
+            self.create_inserts_and_labels(s)
+
         win.formula.setText(text)
+        win.formula.setStyleSheet("font-size: 22px; background-color: gray;")
+        win.formula.setFixedHeight(30)
+
+
+
+
 
 
 # CONST = {"G": 6.6743 * 10 ** (-11)}
