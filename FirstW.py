@@ -1,9 +1,12 @@
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from BAZE import *
 from math import sqrt
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from pynput import keyboard
 from pynput import mouse
+
+from BAZE import *
 
 
 class FirstW(QWidget):
@@ -30,12 +33,20 @@ class FirstW(QWidget):
 
         self.nums_create()
 
-        self.mouse_listener = mouse.Listener(on_click=self.on_click)
+        self.mouse_listener = mouse.Listener(on_click=self.on_click_mouse)
         self.mouse_listener.start()
+
+        self.keyboard_listener = keyboard.Listener(on_press=self.on_press)
+        self.keyboard_listener.start()
 
         self.show()
 
-    def on_click(self, x, y, button, is_pressed):
+    def on_press(self, key):
+        global num_insert
+        if str(key) == "Key.tab":
+            num_insert += 1
+
+    def on_click_mouse(self, x, y, button, is_pressed):
         global num_insert
         if is_pressed and str(button) == "Button.left":
             if row == 1 and (120 <= x - 350 <= 210):
@@ -89,9 +100,11 @@ class FirstW(QWidget):
     def clear_insert(self):
         if len(self.inserts) > 0 and num_insert != - 1 and len(self.inserts[num_insert].text()) > 0:
             self.inserts[num_insert].clear()
+
     def insert_num(self, text):
         if len(self.inserts) > 0 and num_insert != - 1:
             self.inserts[num_insert].insert(text)
+
     def check_nums(self, number):
         try:
             float(number)
@@ -120,6 +133,7 @@ class FirstW(QWidget):
             for i in range(len(right_part)):
                 if right_part[i] in "/*-+()\u221A":
                     self.data_for_calc.insert(i, right_part[i])
+
             self.calculate()
 
     def msgBox(self, title, text):
@@ -136,17 +150,18 @@ class FirstW(QWidget):
             self.data_for_calc = "".join(self.data_for_calc[1:])
         else:
             self.data_for_calc = "".join(self.data_for_calc)
-        # print(self.data_for_calc, type(self.data_for_calc), sep="\t")
+
         try:
             left_part = self.formula.text()
             left_part = left_part[:left_part.find("=") + 1]
             if SQRT:
-                result = left_part + " " + str(round(sqrt(eval(self.data_for_calc)), 2))
+                result = left_part + " " + '{:.2e}'.format(sqrt(eval(self.data_for_calc)))
             else:
-                result = left_part + " " + str(float(round(eval(self.data_for_calc), 2)))
+                result = left_part + " " + '{:.2e}'.format(eval(self.data_for_calc))
         except ZeroDivisionError:
             self.msgBox("Деление на ноль", "На ноль делить нельзя!")
             return 0
+        print(result)
         self.show_result(result)
 
     def hide_lab_ins(self):
@@ -285,12 +300,19 @@ class SecondW(QWidget):
                 win.labels += [label]
                 win.labels += [equally]
 
-                insert = QLineEdit(win.frame1)
-                insert.setStyleSheet("font-size: 18px;")
-                insert.move(x + 45, y)
-                insert.setFixedSize(90, 30)
-                insert.show()
-                win.inserts += [insert]
+                insert_line = QLineEdit(win.frame1)
+                insert_line.setStyleSheet("font-size: 18px;")
+                insert_line.move(x + 45, y)
+                insert_line.setFixedSize(90, 30)
+                insert_line.show()
+                try:
+                    cons = CONST[t]
+                    insert_line.insert(str(cons))
+                    insert_line.setEnabled(False)
+                except:
+                    pass
+
+                win.inserts += [insert_line]
                 if row:
                     if count == 2:
                         y = 25
@@ -341,7 +363,6 @@ class SecondW(QWidget):
         win.formula.setFixedHeight(30)
 
 
-# CONST = {"G": 6.6743 * 10 ** (-11)}
 app = QApplication([])
 win = FirstW()
 img = QIcon("calc.png")
