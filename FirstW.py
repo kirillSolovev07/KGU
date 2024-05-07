@@ -155,9 +155,9 @@ class FirstW(QWidget):
             left_part = self.formula.text()
             left_part = left_part[:left_part.find("=") + 1]
             if SQRT:
-                result = left_part + " " + '{:.2e}'.format(sqrt(eval(self.data_for_calc)))
+                result = left_part + " " + str(float(round(sqrt(eval(self.data_for_calc)), 2)))
             else:
-                result = left_part + " " + '{:.2e}'.format(eval(self.data_for_calc))
+                result = left_part + " " + str(float(round(eval(self.data_for_calc), 2)))
         except ZeroDivisionError:
             self.msgBox("Деление на ноль", "На ноль делить нельзя!")
             return 0
@@ -179,7 +179,7 @@ class FirstW(QWidget):
         self.formula.setText(result)
 
     def combobox_create(self):
-        sections = ["Механика", "Термодинамика", "Электричество", "Оптика"]
+        sections = ["Механика", "Электричество"]
         self.combobox = QComboBox(self.frame)
         self.combobox.addItems(sections)
         self.combobox.move(150, 0)
